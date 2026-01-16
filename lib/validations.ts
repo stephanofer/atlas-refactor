@@ -62,9 +62,7 @@ export const userSchema = z.object({
     .string()
     .uuid('Selecciona un área válida')
     .optional(),
-  role: z.enum(['admin', 'supervisor', 'user'], {
-    errorMap: () => ({ message: 'Selecciona un rol válido' }),
-  }),
+  role: z.enum(['admin', 'supervisor', 'user']),
 });
 
 export const documentUploadSchema = z.object({
@@ -84,7 +82,7 @@ export const documentUploadSchema = z.object({
     .uuid()
     .optional()
     .nullable(),
-  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional().default('normal'),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).default('normal'),
 });
 
 export const deriveSchema = z.object({

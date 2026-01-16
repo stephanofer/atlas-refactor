@@ -73,10 +73,10 @@ export default function UploadPage() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<DocumentUploadFormData>({
+  } = useForm({
     resolver: zodResolver(documentUploadSchema),
     defaultValues: {
-      priority: 'normal',
+      priority: 'normal' as const,
     },
   });
 

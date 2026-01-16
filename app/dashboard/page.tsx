@@ -211,9 +211,9 @@ export default function DashboardPage() {
             action,
             user_id,
             created_at,
-            document:documents(title),
-            user:users!document_history_user_id_fkey(full_name, avatar_url),
-            to_area:areas!document_history_to_area_id_fkey(name)
+            documents!document_history_document_id_fkey(title),
+            users!document_history_user_id_fkey(full_name, avatar_url),
+            areas!document_history_to_area_id_fkey(name)
           `)
           .eq('company_id', profile.company_id)
           .order('created_at', { ascending: false })
@@ -223,7 +223,18 @@ export default function DashboardPage() {
           console.error('Error fetching activity:', activityError);
         }
 
-        setRecentActivity(activity || []);
+        // Transform the data to match ActivityItem interface
+        const transformedActivity = (activity || []).map((item: any) => ({
+          id: item.id,
+          action: item.action,
+          user_id: item.user_id,
+          created_at: item.created_at,
+          document: item.documents,
+          user: item.users,
+          to_area: item.areas,
+        }));
+
+        setRecentActivity(transformedActivity);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
