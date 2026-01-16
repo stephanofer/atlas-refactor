@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { User as SupabaseUser, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { User } from '@/lib/types';
 
 interface AuthContextType {
@@ -15,89 +15,61 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Global flag to prevent double init in strict mode
-let isInitializing = false;
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Prevent concurrent initializations
-    if (isInitializing) {
-      console.log('[Auth] Already initializing, waiting...');
-      return;
-    }
-    isInitializing = true;
-    
     const supabase = createClient();
     let isMounted = true;
-    
-    console.log('[Auth] Initializing...');
 
-    const initialize = async () => {
-      try {
-        // Get session first (faster, uses cached data)
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('[Auth] Session:', session?.user?.email || 'none');
-
-        if (!isMounted) return;
-
-        if (!session?.user) {
-          setLoading(false);
-          isInitializing = false;
-          return;
-        }
-
-        setUser(session.user);
-
-        // Fetch profile
-        const { data: profileData, error } = await supabase
-          .from('users')
-          .select('*, area:areas(*), company:companies(*)')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        console.log('[Auth] Profile:', profileData?.full_name || 'error:', error?.message);
-
-        if (isMounted && profileData) {
-          setProfile(profileData as User);
-        }
-      } catch (err) {
-        console.error('[Auth] Error:', err);
-      } finally {
-        if (isMounted) {
-          console.log('[Auth] Done');
-          setLoading(false);
-          isInitializing = false;
-        }
-      }
+    // Fetch profile helper
+    const fetchProfile = async (userId: string) => {
+      const { data } = await supabase
+        .from('users')
+        .select('*, area:areas(*), company:companies(*)')
+        .eq('id', userId)
+        .maybeSingle();
+      return data as User | null;
     };
 
-    initialize();
-
-    // Listen for auth changes
+    // Use onAuthStateChange as the ONLY source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        console.log('[Auth] Event:', event);
+      async (event, session) => {
+        console.log('[Auth] Event:', event, session?.user?.email || 'no user');
         
         if (!isMounted) return;
 
-        if (event === 'SIGNED_OUT') {
+        if (session?.user) {
+          setUser(session.user);
+          
+          // Fetch profile
+          const profileData = await fetchProfile(session.user.id);
+          if (isMounted) {
+            setProfile(profileData);
+            setLoading(false);
+          }
+        } else {
           setUser(null);
           setProfile(null);
-        } else if (event === 'SIGNED_IN' && session?.user) {
-          setUser(session.user);
-          const { data } = await supabase
-            .from('users')
-            .select('*, area:areas(*), company:companies(*)')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          if (data && isMounted) setProfile(data as User);
+          setLoading(false);
         }
       }
     );
+
+    // Also check initial session (for page refresh)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[Auth] Initial session:', session?.user?.email || 'none');
+      
+      if (!isMounted) return;
+      
+      // If no session, stop loading
+      if (!session) {
+        setLoading(false);
+      }
+      // If session exists, onAuthStateChange will handle it
+    });
 
     return () => {
       isMounted = false;
