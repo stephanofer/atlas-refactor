@@ -139,7 +139,7 @@ interface ActivityItem {
 }
 
 export default function DashboardPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentDocs, setRecentDocs] = useState<Document[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
@@ -148,12 +148,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchDashboardData() {
-      // Wait for auth to be ready and profile to exist
-      if (authLoading || !profile?.company_id) {
+      // Profile is guaranteed to exist because DashboardShell handles auth loading
+      if (!profile?.company_id) {
         return;
       }
-
-      setLoading(true);
 
       try {
         // Fetch documents count
@@ -243,7 +241,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboardData();
-  }, [profile?.company_id, authLoading]);
+  }, [profile?.company_id]);
 
   return (
     <div className="space-y-8">

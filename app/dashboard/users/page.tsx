@@ -75,7 +75,7 @@ const roleColors: Record<UserRole, string> = {
 };
 
 export default function UsersPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,10 +97,7 @@ export default function UsersPage() {
   });
 
   const fetchData = async () => {
-    // Wait for auth to be ready
-    if (authLoading || !profile?.company_id) return;
-
-    setLoading(true);
+    if (!profile?.company_id) return;
 
     try {
       // Fetch users
@@ -135,7 +132,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchData();
-  }, [profile?.company_id, authLoading]);
+  }, [profile?.company_id]);
 
   const openCreateDialog = () => {
     reset({ fullName: '', email: '', password: '', areaId: undefined, role: 'user' });

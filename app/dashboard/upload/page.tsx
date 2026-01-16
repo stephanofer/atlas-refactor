@@ -54,7 +54,7 @@ const fileTypeIcons: Record<string, React.ReactNode> = {
 };
 
 export default function UploadPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const router = useRouter();
   const [areas, setAreas] = useState<Area[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -84,7 +84,7 @@ export default function UploadPage() {
 
   useEffect(() => {
     async function fetchData() {
-      if (authLoading || !profile?.company_id) return;
+      if (!profile?.company_id) return;
 
       // Fetch areas
       const { data: areasData } = await supabase
@@ -97,7 +97,7 @@ export default function UploadPage() {
     }
 
     fetchData();
-  }, [profile?.company_id, authLoading]);
+  }, [profile?.company_id]);
 
   // Fetch users when area changes
   useEffect(() => {

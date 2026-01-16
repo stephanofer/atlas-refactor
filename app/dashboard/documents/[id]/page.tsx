@@ -94,7 +94,7 @@ const actionLabels: Record<string, string> = {
 
 export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const router = useRouter();
   const [document, setDocument] = useState<Document | null>(null);
   const [history, setHistory] = useState<DocHistory[]>([]);
@@ -122,9 +122,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => {
     async function fetchDocument() {
-      if (authLoading || !profile?.company_id) return;
-
-      setLoading(true);
+      if (!profile?.company_id) return;
 
       try {
         // Fetch document
@@ -205,7 +203,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
     }
 
     fetchDocument();
-  }, [resolvedParams.id, profile?.company_id, authLoading]);
+  }, [resolvedParams.id, profile?.company_id]);
 
   // Fetch users when area changes
   useEffect(() => {

@@ -296,7 +296,7 @@ function DashboardHeader() {
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { loading, profile } = useAuth();
 
-  // Show loading state while auth is initializing
+  // Show loading state only while auth is initializing
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -308,13 +308,17 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not loading and no profile, user is not authenticated
+  // If not loading and no profile, redirect to login
+  // This shouldn't happen normally as middleware should handle it
   if (!profile) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <p className="text-sm text-muted-foreground">Verificando sesión...</p>
+          <p className="text-sm text-muted-foreground">Redirigiendo...</p>
         </div>
       </div>
     );

@@ -106,7 +106,7 @@ function DocumentCard({ document }: { document: Document }) {
 }
 
 export default function DocumentsPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,9 +116,7 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     async function fetchDocuments() {
-      if (authLoading || !profile?.company_id) return;
-
-      setLoading(true);
+      if (!profile?.company_id) return;
 
       try {
         let query = supabase
@@ -151,7 +149,7 @@ export default function DocumentsPage() {
     }
 
     fetchDocuments();
-  }, [profile?.company_id, profile?.id, profile?.area_id, currentTab, authLoading]);
+  }, [profile?.company_id, profile?.id, profile?.area_id, currentTab]);
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase());

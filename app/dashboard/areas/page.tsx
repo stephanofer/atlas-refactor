@@ -46,7 +46,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 export default function AreasPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const [areas, setAreas] = useState<Area[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,9 +67,7 @@ export default function AreasPage() {
   });
 
   const fetchAreas = async () => {
-    if (authLoading || !profile?.company_id) return;
-
-    setLoading(true);
+    if (!profile?.company_id) return;
 
     try {
       const { data, error } = await supabase
@@ -112,7 +110,7 @@ export default function AreasPage() {
 
   useEffect(() => {
     fetchAreas();
-  }, [profile?.company_id, authLoading]);
+  }, [profile?.company_id]);
 
   const openCreateDialog = () => {
     setEditingArea(null);
