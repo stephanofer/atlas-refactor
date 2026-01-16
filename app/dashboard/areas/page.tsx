@@ -80,7 +80,7 @@ export default function AreasPage() {
 
       // Get user counts for each area
       const areasWithCounts = await Promise.all(
-        (data || []).map(async (area) => {
+        (data || []).map(async (area: Area) => {
           const { count: userCount } = await supabase
             .from('users')
             .select('*', { count: 'exact', head: true })

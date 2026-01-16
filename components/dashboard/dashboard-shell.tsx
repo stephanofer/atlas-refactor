@@ -296,11 +296,8 @@ function DashboardHeader() {
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { loading, profile } = useAuth();
 
-  console.log('[DashboardShell] Render - loading:', loading, 'profile:', profile?.full_name || 'null');
-
-  // Show loading state only while auth is initializing
+  // Show loading while auth is initializing
   if (loading) {
-    console.log('[DashboardShell] Showing loading spinner');
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -311,10 +308,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not loading and no profile, redirect to login
-  // This shouldn't happen normally as middleware should handle it
+  // Redirect if no profile
   if (!profile) {
-    console.log('[DashboardShell] No profile, redirecting to login');
     if (typeof window !== 'undefined') {
       window.location.href = '/login';
     }
@@ -328,7 +323,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  console.log('[DashboardShell] Rendering children');
   return (
     <SidebarProvider>
       <AppSidebar />
