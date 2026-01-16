@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import type { User as SupabaseUser, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import type { User } from '@/lib/types';
 
 interface AuthContextType {
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Use onAuthStateChange as the ONLY source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
         console.log('[Auth] Event:', event, session?.user?.email || 'no user');
         
         if (!isMounted) return;
@@ -59,7 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Also check initial session (for page refresh)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       console.log('[Auth] Initial session:', session?.user?.email || 'none');
       
       if (!isMounted) return;
@@ -69,7 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
       // If session exists, onAuthStateChange will handle it
-    });
+    };
+    checkSession();
 
     return () => {
       isMounted = false;
