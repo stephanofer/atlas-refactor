@@ -146,12 +146,19 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
+  console.log('[DashboardPage] Render - profile:', profile?.full_name || 'null', 'company_id:', profile?.company_id || 'null');
+
   useEffect(() => {
+    console.log('[DashboardPage] useEffect triggered - profile?.company_id:', profile?.company_id || 'null');
+    
     async function fetchDashboardData() {
       // Profile is guaranteed to exist because DashboardShell handles auth loading
       if (!profile?.company_id) {
+        console.log('[DashboardPage] No company_id, skipping fetch');
         return;
       }
+
+      console.log('[DashboardPage] Starting data fetch...');
 
       try {
         // Fetch documents count
@@ -234,8 +241,9 @@ export default function DashboardPage() {
 
         setRecentActivity(transformedActivity);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('[DashboardPage] Error fetching dashboard data:', error);
       } finally {
+        console.log('[DashboardPage] Fetch complete, setting loading to false');
         setLoading(false);
       }
     }
